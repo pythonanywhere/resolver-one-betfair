@@ -116,6 +116,44 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEquals(["", "a", "b"], betfair.SplitOnDelimiter(":", ":a:b"))
 
 
+    def testMarketFromRecordString(self):
+        market = betfair.Market.fromRecordString(
+            "12~"
+            "Market \\~ name~"
+            "Type~"
+            "Status~"
+            "31536000000~"
+            "\\Menu\\Path\\To\\Market~"
+            "event hierarchy~"
+            "bet delay~"
+            "12345~"
+            "country code~"
+            "94608000000~"
+            "55~"
+            "2~"
+            "1.234556~"
+            "N~"
+            "Y"
+        )
+        self.assertEquals(market.Id, 12)
+        self.assertEquals(market.Name, "Market \\~ name")
+        self.assertEquals(market.Type, "Type")
+        self.assertEquals(market.Status, "Status")
+        self.assertEquals(market.StartDate, DateTime(1971, 1, 1))
+        self.assertEquals(market.Path, "\\Menu\\Path\\To\\Market")
+        self.assertEquals(market.EventHierarchy, "event hierarchy")
+        self.assertEquals(market.BetDelay, "bet delay")
+        self.assertEquals(market.ExchangeId, 12345)
+        self.assertEquals(market.CountryCode, "country code")
+        self.assertEquals(market.LastRefresh, DateTime(1972, 12, 31))
+        self.assertEquals(market.NumberOfRunners, 55)
+        self.assertEquals(market.NumberOfWinners, 2)
+        self.assertEquals(market.TotalAmountMatched, 1.234556)
+        self.assertEquals(market.BSPMarket, False)
+        self.assertEquals(market.TurningInPlay, True)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

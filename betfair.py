@@ -29,6 +29,34 @@ def SplitOnDelimiter(delimiter, string):
     return words
 
 
+class Market(object):
+    @classmethod
+    def fromRecordString(cls, recordString):
+        fields = SplitOnDelimiter('~', recordString)
+        market = cls()
+
+        market.Id = int(fields[0])
+        market.Name = fields[1]
+        market.Type = fields[2]
+        market.Status = fields[3]
+        market.StartDate = DateTimeFromPosix(int(fields[4]))
+        market.Path = fields[5]
+        market.EventHierarchy = fields[6]
+        market.BetDelay = fields[7]
+        market.ExchangeId = int(fields[8])
+        market.CountryCode = fields[9]
+        market.LastRefresh = DateTimeFromPosix(int(fields[10]))
+        market.NumberOfRunners = int(fields[11])
+        market.NumberOfWinners = int(fields[12])
+        market.TotalAmountMatched = float(fields[13])
+        market.BSPMarket = fields[14] == "Y"
+        market.TurningInPlay = fields[15] == "Y"
+        return market
+
+    def __str__(self):
+        return "Market: %s" % (self.Name, )
+
+
 class Gateway(object):
 
     def __init__(self):
