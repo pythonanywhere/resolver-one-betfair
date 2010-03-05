@@ -44,27 +44,33 @@ mockBetfairSOAPAPI = MockBetfairSOAPAPI()
 
 
 
-def MockOutBetfairSOAPAPI(function):
-    def Mocked(*args):
-        oldBetfairSOAPAPI = betfair.BetfairSOAPAPI
-        try:
-            betfair.BetfairSOAPAPI = mockBetfairSOAPAPI
-            function(*args)
-        finally:
-            betfair.BetfairSOAPAPI = oldBetfairSOAPAPI
-    return Mocked
+def MockOut(**kwargs):
+    def Decorator(function):
+        def Decorated(*_args, **_kwargs):
+            oldValues = {}
+            for key, _ in kwargs.items():
+                oldValues = getattr(betfair, key)
+            try:
+                for key, newValue in kwargs.items():
+                    setattr(betfair, key, newValue)
+                function(*_args, **_kwargs)
+            finally:
+                for key, oldValue in kwargs.items():
+                    setattr(betfair, key, oldValue)
+        return Decorated
+    return Decorator
 
 
 class BetfairGatewayTest(unittest.TestCase):
 
-    @MockOutBetfairSOAPAPI
+    @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
     def testCreationShouldBindGatewayFields(self):
         gateway = betfair.Gateway()
         self.assertEqual(type(gateway.globalService), MockBFGlobalService)
         self.assertEqual(type(gateway.exchangeService), MockBFExchangeService)
 
 
-    @MockOutBetfairSOAPAPI
+    @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
     def testLoginShouldReturnTrueAndSetSessionTokenWhenSuccessful(self):
         gateway = betfair.Gateway()
         MockBFGlobalService.test = self
@@ -77,7 +83,7 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEquals(gateway._sessionToken, MockBFGlobalService.sessionToken)
 
 
-    @MockOutBetfairSOAPAPI
+    @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
     def testLoginShouldReturnFalseAndClearSessionTokenWhenUnsuccessful(self):
         gateway = betfair.Gateway()
         MockBFGlobalService.test = self
@@ -90,7 +96,7 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEquals(gateway._sessionToken, None)
 
 
-    @MockOutBetfairSOAPAPI
+    @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
     def testGetAllMarketsShouldPassSessionToken(self):
         gateway = betfair.Gateway()
         gateway._sessionToken = "12345"
