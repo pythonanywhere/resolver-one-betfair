@@ -167,7 +167,7 @@ class BetfairGatewayTest(unittest.TestCase):
         MockBFExchangeService.test = self
         MockBFExchangeService.expectedSessionToken = gateway._sessionToken
         MockBFExchangeService.getAllMarketsCalled = False
-        MockBFExchangeService.marketData = "a:b:c:d"
+        MockBFExchangeService.marketData = ":a:b:c:d"
         MockMarket.test = self
         MockMarket.fromRecordStringExpected = ["a", "b", "c", "d"]
         MockMarket.fromRecordStringResults = [1, 2, 3, 4]

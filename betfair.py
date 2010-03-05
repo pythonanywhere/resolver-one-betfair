@@ -78,4 +78,8 @@ class Gateway(object):
         request = BetfairSOAPAPI.GetAllMarketsReq()
         request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
         response = self.exchangeService.getAllMarkets(request)
-        return [Market.fromRecordString(data) for data in SplitOnDelimiter(':', response.marketData)]
+        result = []
+        for data in SplitOnDelimiter(':', response.marketData):
+            if data != "":
+                result.append(Market.fromRecordString(data))
+        return result

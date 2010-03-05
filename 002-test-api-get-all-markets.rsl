@@ -9,95 +9,25 @@ This spreadsheet is copyright 2010, all rights reserved.
         <traitDefault name='RowHeight' value='22' />
     </traitDefaults>
     <preConstantsUserCode><![CDATA[
+import betfair
+gateway = betfair.Gateway()
+gateway.login("YOUR_USERNAME", "YOUR_PASSWORD")
+
 ]]></preConstantsUserCode>
     <preFormulaeUserCode><![CDATA[
-import clr
-clr.AddReference("betfair")
-from BetfairSOAPAPI import *
-
-globalService = BFGlobalService()
-exchangeService = BFExchangeService()
-
-request = LoginReq(username="YOUR_USERNAME", password="YOUR_PASSWORD", productId=82)
-response = globalService.login(request)
-if response.errorCode != LoginErrorEnum.OK:
-    print "Login failed"
-    raise Exception("Failure")
-print "Login successful"
-sessionToken = response.header.sessionToken
-    
-request = GetAllMarketsReq()
-request.header = APIRequestHeader(sessionToken=sessionToken)
-response = exchangeService.getAllMarkets(request)
-
-def SplitOnDelimiter(delimiter, string):
-    words = []
-    inEscapedChar = False
-    nextWord = []
-    for c in string:
-        if not inEscapedChar:
-            if c == delimiter:
-                words.append(''.join(nextWord))
-                nextWord = []
-                continue
-            elif c == '\\':
-                inEscapedChar = True
-        else:
-            inEscapedChar = False
-        nextWord.append(c)
-    words.append(''.join(nextWord))
-    return words
-
-     
-
-def DateTimeFromPosix(milliseconds):
-    return DateTime(1970, 1, 1).AddMilliseconds(milliseconds)    
-    
-class Market(object):
-    @classmethod
-    def fromRecordString(cls, recordString):
-        fields = SplitOnDelimiter('~', recordString)
-        market = cls(int(fields[0]))
-
-        market.Name = fields[1]
-        market.Type = fields[2]
-        market.Status = fields[3]
-        market.StartDate = DateTimeFromPosix(int(fields[4]))
-        market.Path = fields[5]
-        market.EventHierarchy = fields[6]
-        market.BetDelay = fields[7]
-        market.ExchangeId = int(fields[8])
-        market.CountryCode = fields[9]
-        market.LastRefresh = DateTimeFromPosix(int(fields[10]))
-        market.NumberOfRunners = int(fields[11])
-        market.NumberOfWinners = int(fields[12])
-        market.TotalAmountMatched = float(fields[13])
-        market.BSPMarket = fields[14] == "Y"
-        market.TurningInPlay = fields[15] == "Y"
-        return market
-
-    def __init__(self, id):
-        self.Id = id
-   
-    def __str__(self):
-        return "Market: %s" % (self.Name, )
-
 rowIter = workbook["Sheet1"].AllRowsFromIndex(2)
-fields = [value for value in workbook["Sheet1"].Rows[1]]
-for marketData in SplitOnDelimiter(':', response.marketData):
-    if marketData != '':
-        market = Market.fromRecordString(marketData)
-        row = rowIter.next()
-        row[1] = market
+for market in gateway.getAllMarkets():
+    row = rowIter.next()
+    row[1] = market
 
 
 ]]></preFormulaeUserCode>
     <names />
     <viewStates>
         <viewState worksheet="Sheet1">
-            <currentCell col="4" row="3" />
+            <currentCell col="3" row="4" />
             <scrollPos col="1" row="1" />
-            <virtualGridSize width="15" height="13" />
+            <virtualGridSize width="15" height="10181" />
         </viewState>
         <viewState worksheet="Sheet2">
             <currentCell col="1" row="1" />
