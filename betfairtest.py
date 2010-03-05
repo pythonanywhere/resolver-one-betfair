@@ -18,14 +18,25 @@ class MockBFGlobalService(object):
 
 
 class MockBFExchangeService(object):
-    pass
+    def getAllMarkets(self, request):
+        MockBFExchangeService.getAllMarketsCalled = True
+        MockBFExchangeService.test.assertEqual(
+            MockBFExchangeService.expectedSessionToken,
+            request.header.sessionToken
+        )
 
 
 class MockBetfairSOAPAPI(object):
     BFGlobalService = MockBFGlobalService
     BFExchangeService = MockBFExchangeService
+
+    APIRequestHeader = BetfairSOAPAPI.APIRequestHeader
+
     LoginReq = BetfairSOAPAPI.LoginReq
     LoginErrorEnum = BetfairSOAPAPI.LoginErrorEnum
+
+    GetAllMarketsReq = BetfairSOAPAPI.GetAllMarketsReq
+
 mockBetfairSOAPAPI = MockBetfairSOAPAPI()
 
 
@@ -63,7 +74,6 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEquals(gateway._sessionToken, MockBFGlobalService.sessionToken)
 
 
-
     @MockOutBetfairSOAPAPI
     def testLoginShouldReturnFalseAndClearSessionTokenWhenUnsuccessful(self):
         gateway = betfair.Gateway()
@@ -75,6 +85,18 @@ class BetfairGatewayTest(unittest.TestCase):
         result = gateway.login(MockBFGlobalService.expectedUsername, MockBFGlobalService.expectedPassword)
         self.assertFalse(result)
         self.assertEquals(gateway._sessionToken, None)
+
+
+    @MockOutBetfairSOAPAPI
+    def testGetAllMarketsShouldPassSessionToken(self):
+        gateway = betfair.Gateway()
+        gateway._sessionToken = "12345"
+        MockBFExchangeService.test = self
+        MockBFExchangeService.expectedSessionToken = gateway._sessionToken
+        MockBFExchangeService.getAllMarketsCalled = False
+        markets = gateway.getAllMarkets()
+        self.assertTrue(MockBFExchangeService.getAllMarketsCalled)
+
 
 
 if __name__ == '__main__':

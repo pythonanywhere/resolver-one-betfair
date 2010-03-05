@@ -18,3 +18,9 @@ class Gateway(object):
             return True
         self._sessionToken = None
         return False
+
+
+    def getAllMarkets(self):
+        request = BetfairSOAPAPI.GetAllMarketsReq()
+        request.header = BetfairSOAPAPI.APIRequestHeader(sessionToken=self._sessionToken)
+        self.exchangeService.getAllMarkets(request)
