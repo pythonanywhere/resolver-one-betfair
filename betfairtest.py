@@ -44,18 +44,23 @@ mockBetfairSOAPAPI = MockBetfairSOAPAPI()
 
 
 
+class MockMarket(object):
+    pass
+
+
+
 def MockOut(**kwargs):
     def Decorator(function):
         def Decorated(*_args, **_kwargs):
             oldValues = {}
             for key, _ in kwargs.items():
-                oldValues = getattr(betfair, key)
+                oldValues[key] = getattr(betfair, key)
             try:
                 for key, newValue in kwargs.items():
                     setattr(betfair, key, newValue)
                 function(*_args, **_kwargs)
             finally:
-                for key, oldValue in kwargs.items():
+                for key, oldValue in oldValues.items():
                     setattr(betfair, key, oldValue)
         return Decorated
     return Decorator
@@ -148,8 +153,8 @@ class BetfairGatewayTest(unittest.TestCase):
         self.assertEquals(gateway._sessionToken, None)
 
 
-    @MockOut(BetfairSOAPAPI=mockBetfairSOAPAPI)
-    def testGetAllMarketsShouldPassSessionToken(self):
+    @MockOut(Market=MockMarket, BetfairSOAPAPI=mockBetfairSOAPAPI)
+    def testGetAllMarketsShouldPassSessionTokenAndReturnConvertedMarkets(self):
         gateway = betfair.Gateway()
         gateway._sessionToken = "12345"
         MockBFExchangeService.test = self
@@ -157,8 +162,6 @@ class BetfairGatewayTest(unittest.TestCase):
         MockBFExchangeService.getAllMarketsCalled = False
         markets = gateway.getAllMarkets()
         self.assertTrue(MockBFExchangeService.getAllMarketsCalled)
-
-
 
 
 if __name__ == '__main__':
