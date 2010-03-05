@@ -27,6 +27,9 @@ class MockBFExchangeService(object):
             MockBFExchangeService.expectedSessionToken,
             request.header.sessionToken
         )
+        response = BetfairSOAPAPI.GetAllMarketsResp()
+        response.marketData = MockBFExchangeService.marketData
+        return response
 
 
 class MockBetfairSOAPAPI(object):
@@ -45,7 +48,10 @@ mockBetfairSOAPAPI = MockBetfairSOAPAPI()
 
 
 class MockMarket(object):
-    pass
+
+    @classmethod
+    def fromRecordString(cls, recordString):
+        return MockMarket.fromRecordStringResults.pop(0)
 
 
 
@@ -160,8 +166,13 @@ class BetfairGatewayTest(unittest.TestCase):
         MockBFExchangeService.test = self
         MockBFExchangeService.expectedSessionToken = gateway._sessionToken
         MockBFExchangeService.getAllMarketsCalled = False
+        MockBFExchangeService.marketData = "a:b:c:d"
+        MockMarket.test = self
+        MockMarket.fromRecordStringExpected = ["a", "b", "c", "d"]
+        MockMarket.fromRecordStringResults = [1, 2, 3, 4]
         markets = gateway.getAllMarkets()
         self.assertTrue(MockBFExchangeService.getAllMarketsCalled)
+        self.assertEquals(markets, [1, 2, 3, 4])
 
 
 if __name__ == '__main__':
