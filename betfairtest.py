@@ -51,6 +51,7 @@ class MockMarket(object):
 
     @classmethod
     def fromRecordString(cls, recordString):
+        MockMarket.test.assertEquals(recordString, MockMarket.fromRecordStringExpected.pop(0))
         return MockMarket.fromRecordStringResults.pop(0)
 
 
