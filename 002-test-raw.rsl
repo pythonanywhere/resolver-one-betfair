@@ -9,6 +9,8 @@ This spreadsheet is copyright 2010, all rights reserved.
         <traitDefault name='RowHeight' value='22' />
     </traitDefaults>
     <preConstantsUserCode><![CDATA[
+]]></preConstantsUserCode>
+    <preFormulaeUserCode><![CDATA[
 import clr
 clr.AddReference("betfair")
 from BetfairSOAPAPI import *
@@ -27,18 +29,75 @@ sessionToken = response.header.sessionToken
 request = GetAllMarketsReq()
 request.header = APIRequestHeader(sessionToken=sessionToken)
 response = exchangeService.getAllMarkets(request)
-print "Response from getting list of markets", response.errorCode, response.header.errorCode
-print "Market data", response.marketData
 
-]]></preConstantsUserCode>
-    <preFormulaeUserCode><![CDATA[
+def SplitOnDelimiter(delimiter, string):
+    words = []
+    inEscapedChar = False
+    nextWord = []
+    for c in string:
+        if not inEscapedChar:
+            if c == delimiter:
+                words.append(''.join(nextWord))
+                nextWord = []
+                continue
+            elif c == '\\':
+                inEscapedChar = True
+        else:
+            inEscapedChar = False
+        nextWord.append(c)
+    words.append(''.join(nextWord))
+    return words
+
+     
+
+def DateTimeFromPosix(milliseconds):
+    return DateTime(1970, 1, 1).AddMilliseconds(milliseconds)    
+    
+class Market(object):
+    @classmethod
+    def fromRecordString(cls, recordString):
+        fields = SplitOnDelimiter('~', recordString)
+        market = cls(int(fields[0]))
+
+        market.Name = fields[1]
+        market.Type = fields[2]
+        market.Status = fields[3]
+        market.StartDate = DateTimeFromPosix(int(fields[4]))
+        market.Path = fields[5]
+        market.EventHierarchy = fields[6]
+        market.BetDelay = fields[7]
+        market.ExchangeId = int(fields[8])
+        market.CountryCode = fields[9]
+        market.LastRefresh = DateTimeFromPosix(int(fields[10]))
+        market.NumberOfRunners = int(fields[11])
+        market.NumberOfWinners = int(fields[12])
+        market.TotalAmountMatched = float(fields[13])
+        market.BSPMarket = fields[14] == "Y"
+        market.TurningInPlay = fields[15] == "Y"
+        return market
+
+    def __init__(self, id):
+        self.Id = id
+   
+    def __str__(self):
+        return "Market: %s" % (self.Name, )
+
+rowIter = workbook["Sheet1"].AllRowsFromIndex(2)
+fields = [value for value in workbook["Sheet1"].Rows[1]]
+for marketData in SplitOnDelimiter(':', response.marketData):
+    if marketData != '':
+        market = Market.fromRecordString(marketData)
+        row = rowIter.next()
+        row[1] = market
+
+
 ]]></preFormulaeUserCode>
     <names />
     <viewStates>
         <viewState worksheet="Sheet1">
-            <currentCell col="3" row="4" />
+            <currentCell col="4" row="3" />
             <scrollPos col="1" row="1" />
-            <virtualGridSize width="19" height="13" />
+            <virtualGridSize width="15" height="13" />
         </viewState>
         <viewState worksheet="Sheet2">
             <currentCell col="1" row="1" />
@@ -56,7 +115,7 @@ print "Market data", response.marketData
         <orderentry name="Sheet2" />
         <orderentry name="Sheet3" />
     </worksheetOrder>
-    <worksheet name="Sheet1" value="" showGrid="True" showBounds="False" headerWidth="-1" headerHeight="-1">
+    <worksheet name="Sheet1" value="" showGrid="True" showBounds="False" headerWidth="51" headerHeight="-1">
         <trait name="FontSize">
         </trait>
         <trait name="BorderBottom">
@@ -66,6 +125,17 @@ print "Market data", response.marketData
         <trait name="Unit">
         </trait>
         <trait name="ColWidth">
+            <traitentry col="1" row="0" value="212" />
+            <traitentry col="2" row="0" value="81" />
+            <traitentry col="5" row="0" value="341" />
+            <traitentry col="8" row="0" value="97" />
+            <traitentry col="9" row="0" value="107" />
+            <traitentry col="10" row="0" value="119" />
+            <traitentry col="11" row="0" value="141" />
+            <traitentry col="12" row="0" value="145" />
+            <traitentry col="13" row="0" value="139" />
+            <traitentry col="14" row="0" value="127" />
+            <traitentry col="15" row="0" value="111" />
         </trait>
         <trait name="Alignment">
         </trait>
@@ -106,6 +176,7 @@ print "Market data", response.marketData
         <trait name="BackColor">
         </trait>
         <trait name="Bold">
+            <traitentry col="0" row="1" value="True" />
         </trait>
         <trait name="Strikethrough">
         </trait>
@@ -113,6 +184,8 @@ print "Market data", response.marketData
         </trait>
         <trait name="DecimalPlaces">
         </trait>
+        <cell name="A1" value="Market object" type="general">
+        </cell>
     </worksheet>
     <worksheet name="Sheet2" value="" showGrid="True" showBounds="False" headerWidth="-1" headerHeight="-1">
         <trait name="FontSize">
