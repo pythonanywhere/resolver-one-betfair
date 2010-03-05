@@ -1,6 +1,32 @@
+from System import DateTime
+
 import clr
 clr.AddReference("betfair")
 import BetfairSOAPAPI
+
+
+
+def DateTimeFromPosix(milliseconds):
+    return DateTime(1970, 1, 1).AddMilliseconds(milliseconds)
+
+
+def SplitOnDelimiter(delimiter, string):
+    words = []
+    inEscapedChar = False
+    nextWord = []
+    for c in string:
+        if not inEscapedChar:
+            if c == delimiter:
+                words.append(''.join(nextWord))
+                nextWord = []
+                continue
+            elif c == '\\':
+                inEscapedChar = True
+        else:
+            inEscapedChar = False
+        nextWord.append(c)
+    words.append(''.join(nextWord))
+    return words
 
 
 class Gateway(object):

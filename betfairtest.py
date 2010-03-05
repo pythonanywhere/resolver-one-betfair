@@ -1,5 +1,8 @@
 import unittest
 
+from System import DateTime
+
+
 import betfair
 import BetfairSOAPAPI
 
@@ -96,6 +99,21 @@ class BetfairGatewayTest(unittest.TestCase):
         MockBFExchangeService.getAllMarketsCalled = False
         markets = gateway.getAllMarkets()
         self.assertTrue(MockBFExchangeService.getAllMarketsCalled)
+
+
+
+    def testDateTimeFromPosix(self):
+        self.assertEquals(DateTime(1970, 1, 1), betfair.DateTimeFromPosix(0))
+        self.assertEquals(DateTime(1970, 1, 1, 1, 0, 0), betfair.DateTimeFromPosix(3600000))
+        self.assertEquals(DateTime(1970, 1, 2), betfair.DateTimeFromPosix(3600000*24))
+        self.assertEquals(DateTime(1971, 1, 1), betfair.DateTimeFromPosix(3600000*24*365))
+        self.assertEquals(DateTime(1979, 12, 30), betfair.DateTimeFromPosix(3600000*24*365*10))
+
+
+    def testSplitOnDelimiter(self):
+        self.assertEquals(["a", "b"], betfair.SplitOnDelimiter(":", "a:b"))
+        self.assertEquals(["a\\:b", "c"], betfair.SplitOnDelimiter(":", "a\\:b:c"))
+        self.assertEquals(["", "a", "b"], betfair.SplitOnDelimiter(":", ":a:b"))
 
 
 
